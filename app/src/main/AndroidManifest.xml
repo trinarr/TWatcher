@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.twatcher">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:allowBackup="false"
         android:name=".App"
@@ -11,6 +13,32 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         tools:ignore="GoogleAppIndexingWarning"
         android:supportsRtl="true">
+
+        <service
+            android:name=".AutoStartService"
+            android:enabled="true"
+            android:exported="true"
+            android:label="WhatsNotify"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".RestartBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+        </receiver>
+
+        <service
+            android:process=":serviceNonStoppable"
+            android:name=".serviceOn"
+            android:exported="false"
+            android:description="@string/service_description">
+        </service>
 
         <activity
             android:name=".MainActivity"
