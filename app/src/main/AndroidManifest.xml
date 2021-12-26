@@ -5,7 +5,7 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGEE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
@@ -18,9 +18,20 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity
-            android:name=".ScreenRecordingAcitivity"
+            android:name=".ScreenCaptureActivity"
             android:theme="@style/Invisible"
-            android:exported="false">
+            android:exported="false"
+            android:launchMode="singleTask">
+        </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Invisible">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <service
@@ -40,17 +51,6 @@
             android:exported="true"
             android:label="RestartServiceWhenStopped">
         </receiver>
-
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/Invisible">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

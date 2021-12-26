@@ -89,11 +89,16 @@ public class AutoStartService extends NotificationListenerService {
     public void onNotificationPosted(StatusBarNotification sbn){
         String notificationApp = sbn.getPackageName();
 
+        Log.i(TAG, "onNotificationPosted: " + notificationApp);
+
         if(notificationApp != null && notificationApp.equals(NEEDED_APP_PACKAGE)) {
             String notificationTitle = sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
             String notificationText = sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString();
 
-            if(notificationTitle != null && notificationText != null &&
+            Log.i(TAG, "IS NEEDED1: "+notificationTitle);
+            Log.i(TAG, "IS NEEDED2: "+notificationText);
+
+            /*if(notificationTitle != null && notificationText != null &&
                     notificationTitle.equals(NEEDED_APP_NOTIFICATION_TITLE)) {
                 Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
                 Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString());
@@ -101,7 +106,11 @@ public class AutoStartService extends NotificationListenerService {
                 Intent dialogIntent = new Intent(this, ScreenRecordingAcitivity.class);
                 dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(dialogIntent);
-            }
+            }*/
+
+            Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
+            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            App.getAppContext().startActivity(dialogIntent);
         }
     }
 
