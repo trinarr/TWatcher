@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     Intent mServiceIntent;
-    private AutoStartService mAutoStartService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i("TEST:", "MainActivity");
 
-        mAutoStartService = new AutoStartService();
         mServiceIntent = new Intent(this, AutoStartService.class);
 
         if (!isMyServiceRunning(AutoStartService.class)) {
