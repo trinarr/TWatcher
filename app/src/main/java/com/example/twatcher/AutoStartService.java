@@ -6,9 +6,6 @@ import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
-
-import androidx.annotation.Nullable;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,62 +17,63 @@ public class AutoStartService extends NotificationListenerService {
     private static final String NEEDED_APP_NOTIFICATION_MESSAGE = "Код подтверждения";
     public int counter = 0;
     private Timer timer;
-    private TimerTask timerTask;
 
     public AutoStartService() {
-        Log.i(TAG, "AutoStartService: Here we go.....");
+        Log.i(TAG, "AutoStartService constructor");
     }
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.i(TAG, "onBind");
+        Log.i(TAG, "AutoStartService onBind");
+        Log.i(TAG, "AutoStartService intent"+intent.getAction());
+
+        //return new RecordBinder();
+
+        startTimer();
 
         return super.onBind(intent);
     }
 
     @Override
-    public void onCreate() {
-        Log.i(TAG, "onCreate");
-        super.onCreate();
-    }
-
-    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "AutoStartService onStartCommand");
+
         super.onStartCommand(intent, flags, startId);
-        Log.i(TAG, "onStartCommand");
 
         startTimer();
         return START_STICKY;
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy: Service is destroyed :( ");
-        Intent broadcastIntent = new Intent(this, RestartBroadcastReceiver.class);
-
-        sendBroadcast(broadcastIntent);
-        stoptimertask();
+    public void onCreate() {
+        Log.i(TAG, "AutoStartService onCreate");
+        super.onCreate();
     }
 
     public void startTimer() {
+        if (timer != null) {
+            timer.cancel();
+        }
+
         timer = new Timer();
-
-        //initialize the TimerTask's job
-        initialiseTimerTask();
-
-        //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 1000, 1000); //
-    }
-
-    public void initialiseTimerTask() {
-        timerTask = new TimerTask() {
+        TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
                 Log.i(TAG, "Timer is running " + counter++);
+                if(App.getDelayCounter() > 0) {
+                    Log.i(TAG, "getDelayCounter: " + App.getDelayCounter());
+
+                    App.minusDelayCounter();
+
+                    Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
+                    dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    App.getAppContext().startActivity(dialogIntent);
+                }
+
             }
         };
+
+        timer.schedule(timerTask, 1000, 1000);
     }
 
     public void stoptimertask() {
@@ -108,6 +106,8 @@ public class AutoStartService extends NotificationListenerService {
                 startActivity(dialogIntent);
             }*/
 
+            App.setDelayCounter(3);
+
             Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
             dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             App.getAppContext().startActivity(dialogIntent);
@@ -117,5 +117,15 @@ public class AutoStartService extends NotificationListenerService {
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn){
         //Log.i(TAG, "onNotificationRemoved: " + sbn.getTag());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy: Service is destroyed :( ");
+        Intent broadcastIntent = new Intent(this, RestartBroadcastReceiver.class);
+
+        sendBroadcast(broadcastIntent);
+        stoptimertask();
     }
 }

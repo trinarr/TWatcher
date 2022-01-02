@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -28,13 +27,11 @@ public class MainActivity extends AppCompatActivity {
         Log.i("TEST:", "MainActivity");
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                + ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             Log.i("TEST:", "PERMISSIONS NEEDED!");
 
             ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.RECORD_AUDIO
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, REQUEST_PERMISSION);
         } else {
             Log.i("TEST:", "NO PERMISSIONS NEEDED!");

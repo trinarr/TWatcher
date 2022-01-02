@@ -6,266 +6,177 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
-import android.media.MediaRecorder;
+import android.media.Image;
+import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.SparseIntArray;
-import android.view.Surface;
+import android.view.View;
+import android.widget.Button;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Random;
-
-import wseemann.media.FFmpegMediaMetadataRetriever;
 
 public class ScreenCaptureActivity extends AppCompatActivity {
-    private static final int videoTime = 5000;
-    private static final int REQUEST_CODE = 1000;
-    private static final int REQUEST_PERMISSION = 1000;
-    private static final SparseIntArray ORIENTATION = new SparseIntArray();
-    private MediaProjectionManager mediaProjectionManager;
+
+    private static final int RECORD_REQUEST_CODE  = 101;
+    private static final int STORAGE_REQUEST_CODE = 102;
+
+    private MediaProjectionManager projectionManager;
+
     private MediaProjection mediaProjection;
     private VirtualDisplay virtualDisplay;
-    private MediaProjectionCallback mediaProjectionCallback;
-    private MediaRecorder mediaRecorder;
-    private int mScreenDensity;
-    private static int DISPLAY_WIDTH = 720;
-    private static int DISPLAY_HEIGHT = 1280;
+    private ImageReader mImageReader;
 
-    static {
-        ORIENTATION.append(Surface.ROTATION_0, 90);
-        ORIENTATION.append(Surface.ROTATION_90, 0);
-        ORIENTATION.append(Surface.ROTATION_180, 270);
-        ORIENTATION.append(Surface.ROTATION_270, 180);
-    }
+    private boolean running;
+    private int width = 720;
+    private int height = 1080;
+    private int dpi;
 
-    private String screenShotUri = "";
+    final String TAG = "TEST:";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "ScreenCaptureActivity onCreate");
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_screen_recording_acitivity);
-        Log.i("TEST:", "ScreenCaptureActivity onCreate");
 
-        init();
-    }
+        projectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
+        setContentView(R.layout.activity_main);
 
-    @Override
-    public void onStart(){
-        super.onStart();
-        Log.i("TEST:", "ScreenCaptureActivity onStart");
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent){
-        super.onNewIntent(intent);
-
-        Log.i("TEST:", "ScreenCaptureActivity onNewIntent");
-    }
-
-    private void init() {
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        mScreenDensity = metrics.densityDpi;
-        DISPLAY_HEIGHT = metrics.heightPixels;
-        DISPLAY_WIDTH = metrics.widthPixels;
+        setConfig(metrics.widthPixels, metrics.heightPixels, metrics.densityDpi);
 
-        mediaRecorder = new MediaRecorder();
-        mediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                + ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        if (ContextCompat.checkSelfPermission(ScreenCaptureActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            Log.i("TEST:", "PERMISSIONS NEEDED!");
-
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.RECORD_AUDIO
-            }, REQUEST_PERMISSION);
-
-            /*if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.RECORD_AUDIO
-                }, REQUEST_PERMISSION);
-            }*/
-        } else {
-            Log.i("TEST:", "NO PERMISSIONS NEEDED!");
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    toogleScreenShare();
-                }
-            }, 500);
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_REQUEST_CODE);
         }
-    }
-
-    private void toogleScreenShare() {
-        Log.i("TEST:", "toogleScreenShare");
-
-        initRecorder();
-        recordScreen();
-    }
-
-    public void getPathScreenShot(String filePath) {
-        Log.i("TEST:", "getPathScreenShot"+filePath);
-
-        FFmpegMediaMetadataRetriever med = new FFmpegMediaMetadataRetriever();
-
-        med.setDataSource(filePath);
-        Bitmap bmp = med.getFrameAtTime(2 * 1000000, FFmpegMediaMetadataRetriever.OPTION_CLOSEST);
-        String myPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + new StringBuilder("/screenshot").append(".bmp").toString();
-
-        File myDir = new File(myPath);
-        myDir.mkdirs();
-        Random generator = new Random();
-        int n = 10000;
-        n = generator.nextInt(n);
-        String fname = "Image-" + n + ".jpg";
-        File file = new File(myDir, fname);
-
-        Log.i("TEST:", "" + myDir);
-
-        if (myDir.exists())
-            myDir.delete();
-        try {
-            FileOutputStream out = new FileOutputStream(myDir);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 90, out);
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void recordScreen() {
-        if (mediaProjection == null) {
-            startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
-        } else {
-            virtualDisplay = createVirtualDisplay();
-            mediaRecorder.start();
-            onBackPressed();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mediaRecorder.stop();
-                    mediaRecorder.reset();
-                    stopRecordScreen();
-                    destroyMediaProjection();
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            getPathScreenShot(screenShotUri);
-                        }
-                    }, 2000);
-                }
-            }, videoTime);
-        }
-    }
-
-    private VirtualDisplay createVirtualDisplay() {
-        Log.i("TEST:", "createVirtualDisplay");
-
-        return mediaProjection.createVirtualDisplay("MainActivity",
-                DISPLAY_WIDTH, DISPLAY_HEIGHT, mScreenDensity,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                mediaRecorder.getSurface(), null, null);
-    }
-
-    private void initRecorder() {
-        try {
-            //mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-
-            //mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-            //mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
-
-            //mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-            mediaRecorder.setVideoEncodingBitRate(512 * 1000);
-            mediaRecorder.setVideoFrameRate(5);
-            mediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-
-            final File outputFile = File.createTempFile("screenshot", ".3gp", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS));
-
-            //final File outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "screenshot.mp4");
-
-            Log.i("TEST:", "setOutputFile " + outputFile.getAbsolutePath());
-
-            mediaRecorder.setOutputFile(outputFile.getAbsolutePath());
-
-            int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            int orientation = ORIENTATION.get(rotation + 90);
-
-            mediaRecorder.setOrientationHint(orientation);
-            mediaRecorder.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.i("ExceptionOccured", "" + e.getMessage());
+        else {
+            if(!isRunning()){
+                //stopRecord();
+                Intent captureIntent = projectionManager.createScreenCaptureIntent();
+                startActivityForResult(captureIntent,RECORD_REQUEST_CODE);
+            }
         }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode != REQUEST_CODE) {
-            //stopService(new Intent(this, BackgroundService.class));
-            //startService(new Intent(this, BackgroundService.class));
-            //Toast.makeText(ScreenShotActivity.this, "Unknown Error", Toast.LENGTH_SHORT).show();
-            Log.i("Livetracking", "ScreenShot" + requestCode + "  " + resultCode + " " + data);
-            return;
+        if (requestCode == RECORD_REQUEST_CODE && resultCode == RESULT_OK) {
+            mediaProjection = projectionManager.getMediaProjection(resultCode, data);
+            setMediaProject(mediaProjection);
+            startRecord();
         }
-        if (resultCode != RESULT_OK) {
-            //stopService(new Intent(this, BackgroundService.class));
-            //startService(new Intent(this, BackgroundService.class));
-            //Toast.makeText(ScreenShotActivity.this, "Permission denied" + requestCode, Toast.LENGTH_SHORT).show();
-            Log.i("Livetracking", "Screenshot" + requestCode + "  " + resultCode + " " + data);
-            return;
-        }
-        Log.d("Livetracking", "Screenshot" + requestCode + "  " + resultCode + " " + data);
+    }
 
-        mediaProjectionCallback = new ScreenCaptureActivity.MediaProjectionCallback();
-        mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
-        mediaProjection.registerCallback(mediaProjectionCallback, null);
-        virtualDisplay = createVirtualDisplay();
-        mediaRecorder.start();
-        onBackPressed();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mediaRecorder.stop();
-                mediaRecorder.reset();
-                stopRecordScreen();
-                destroyMediaProjection();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        getPathScreenShot(screenShotUri);
-                    }
-                }, 2000);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == STORAGE_REQUEST_CODE) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                finish();
             }
-        }, videoTime);
+        }
+
+        if(!isRunning()){
+            //stopRecord();
+            Intent captureIntent = projectionManager.createScreenCaptureIntent();
+            startActivityForResult(captureIntent,RECORD_REQUEST_CODE);
+        }
+    }
+
+    public void setMediaProject(MediaProjection project) {
+        mediaProjection = project;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setConfig(int width,int height,int dpi){
+        this.width = width;
+        this.height = height;
+        this.dpi = dpi;
+    }
+
+    private void initRecorder(ImageReader argImageReader) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
+        String strDate = dateFormat.format(new java.util.Date());
+        String pathImage = Environment.getExternalStorageDirectory().getPath()+"/Pictures/";
+
+        File localFileDir = new File(pathImage);
+        if(!localFileDir.exists())
+        {
+            localFileDir.mkdirs();
+            Log.d("DaemonService","创建Pictures目录成功");
+        }
+
+        String nameImage = pathImage+strDate+".png";
+
+        Image localImage = argImageReader.acquireLatestImage();
+
+        int width = argImageReader.getWidth();
+        int height = argImageReader.getHeight();
+
+        final Image.Plane[] localPlanes = localImage.getPlanes();
+        final ByteBuffer localBuffer = localPlanes[0].getBuffer();
+        int pixelStride = localPlanes[0].getPixelStride();
+        int rowStride = localPlanes[0].getRowStride();
+        int rowPadding = rowStride - pixelStride * width;
+
+        // 4.1 Image对象转成bitmap
+        Bitmap localBitmap = Bitmap.createBitmap(width + rowPadding / pixelStride, height, Bitmap.Config.ARGB_8888);
+        localBitmap.copyPixelsFromBuffer(localBuffer);
+        localBitmap.createBitmap(localBitmap, 0, 0, width, height);
+
+        if (localBitmap != null) {
+            File f = new File(nameImage);
+            if (f.exists()) {
+                f.delete();
+            }
+            try {
+                FileOutputStream out = new FileOutputStream(f);
+                localBitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+                out.flush();
+                out.close();
+                Log.d("DaemonService", "startCapture-> 保存文件成功："+nameImage);
+
+
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        stopRecord();
 
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         if (am != null) {
@@ -275,38 +186,51 @@ public class ScreenCaptureActivity extends AppCompatActivity {
                 tasks.get(0).setExcludeFromRecents(true);
             }
         }
+
+        finish();
     }
 
-    private class MediaProjectionCallback extends MediaProjection.Callback {
-        @Override
-        public void onStop() {
-            mediaRecorder.stop();
-            mediaRecorder.reset();
-            mediaRecorder.release();
-            mediaProjection = null;
-            stopRecordScreen();
-            destroyMediaProjection();
-            if (mediaProjection != null) {
-                destroyMediaProjection();
-            }
-            super.onStop();
+    public boolean startRecord(){
+        if(mediaProjection == null || running){
+            return false;
         }
+
+        mImageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1);
+        createVirtualDisplay();
+        mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader argImageReader) {
+                try{
+                    initRecorder(mImageReader);
+                }catch (IllegalStateException argE){
+                }
+                stopRecord();
+            }
+        },new Handler());
+
+        running = true;
+        return true;
     }
 
-    private void stopRecordScreen() {
-        if (virtualDisplay != null) {
+    public boolean stopRecord() {
+        Log.i(TAG, "ScreenCaptureActivity stopRecord");
+
+        if (!running) {
+            return false;
+        }
+        running = false;
+
+        if( virtualDisplay!=null){
             virtualDisplay.release();
-            if (mediaProjection != null) {
-                destroyMediaProjection();
-            }
         }
+
+        mediaProjection.stop();
+
+        return true;
     }
 
-    private void destroyMediaProjection() {
-        if (mediaProjection != null) {
-            mediaProjection.unregisterCallback(mediaProjectionCallback);
-            mediaProjection.stop();
-            mediaProjection = null;
-        }
+    private void createVirtualDisplay() {
+        virtualDisplay = mediaProjection.createVirtualDisplay("MainScreen", width, height, dpi,
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mImageReader.getSurface(), null, null);
     }
 }
