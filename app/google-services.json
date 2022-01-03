@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "128207373926",
+    "project_id": "twatcher-test",
+    "storage_bucket": "twatcher-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128207373926:android:59fc1359bf2c02401a4fa7",
+        "android_client_info": {
+          "package_name": "com.example.twatcher"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "128207373926-hup1hkv2aj396g8v4erqik9nggcjbstc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARQ4qKCDuV3sifKhovxwTJ6eaWScBZIu4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "128207373926-hup1hkv2aj396g8v4erqik9nggcjbstc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
