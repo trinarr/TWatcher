@@ -51,6 +51,7 @@ dependencies {
     implementation 'com.github.wseemann:FFmpegMediaMetadataRetriever-native:1.0.16'
     implementation 'com.jakewharton:butterknife:10.2.3'
     implementation 'com.github.HBiSoft:HBRecorder:2.0.3'
+    implementation files('libs\\ftp4j-1.7.2.jar')
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
 
     testImplementation 'junit:junit:4.+'

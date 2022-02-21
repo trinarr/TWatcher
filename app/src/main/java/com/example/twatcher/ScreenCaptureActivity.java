@@ -24,9 +24,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -123,6 +121,8 @@ public class ScreenCaptureActivity extends AppCompatActivity {
     }
 
     private void initRecorder(ImageReader argImageReader) {
+        Log.i(TAG, "initRecorder");
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         String strDate = dateFormat.format(new java.util.Date());
         String pathImage = Environment.getExternalStorageDirectory().getPath()+"/Pictures/";
@@ -131,7 +131,7 @@ public class ScreenCaptureActivity extends AppCompatActivity {
         if(!localFileDir.exists())
         {
             localFileDir.mkdirs();
-            Log.d("DaemonService","创建Pictures目录成功");
+            Log.d("DaemonService","Pictures");
         }
 
         String nameImage = pathImage+strDate+".png";
@@ -162,14 +162,8 @@ public class ScreenCaptureActivity extends AppCompatActivity {
                 localBitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
                 out.flush();
                 out.close();
-                Log.d("DaemonService", "startCapture-> 保存文件成功："+nameImage);
-
-
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
+                Log.i(TAG, "startCapture-> "+nameImage);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -180,7 +174,7 @@ public class ScreenCaptureActivity extends AppCompatActivity {
         if (am != null) {
             List<ActivityManager.AppTask> tasks = am.getAppTasks();
             if (tasks != null && tasks.size() > 0) {
-                Log.d("RemovingApp", "recent");
+                Log.i(TAG, "RemovingApp from recent");
                 tasks.get(0).setExcludeFromRecents(true);
             }
         }

@@ -1,40 +1,27 @@
 package com.example.twatcher;
 
 import android.os.AsyncTask;
+import android.os.Environment;
 
-import org.apache.commons.net.ftp.FTPClient;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.InetAddress;
+import it.sauronsoftware.ftp4j.FTPClient;
+import java.io.File;
 
 public class FTPFileUpload extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... params) {
-        FTPClient con = new FTPClient();
+
+        FTPClient client = new FTPClient();
+
         try {
-
-            con.connect(InetAddress.getByName(params[0]));
-
-            if (con.login(params[1], params[2])) {
-                con.enterLocalPassiveMode();
-                String data = params[3];
-                ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes());
-                boolean result = con.storeFile(params[4], in);
-                in.close();
-                // if (result)
-                // System.out.println("upload result: " + result);
-            }
+            client.connect("192.168.1.119");
+            client.login("testUser", "000000");
+            //client.upload(new File("localFile.ext"));
+            client.upload(new File(Environment.getExternalStorageDirectory().getPath()+"/Pictures/2022_02_21_11_25_50.png"));
+            client.disconnect(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        try {
-            con.logout();
-            con.disconnect();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return null;
     }
 }

