@@ -123,8 +123,10 @@ public class ScreenCaptureActivity extends AppCompatActivity {
     private void initRecorder(ImageReader argImageReader) {
         Log.i(TAG, "initRecorder");
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
-        String strDate = dateFormat.format(new java.util.Date());
+        //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
+        //String strDate = dateFormat.format(new java.util.Date());
+        long tsLong = System.currentTimeMillis()/1000;
+        String strDate = "Screen_"+tsLong;
         String pathImage = Environment.getExternalStorageDirectory().getPath()+"/Pictures/";
 
         File localFileDir = new File(pathImage);
@@ -157,6 +159,7 @@ public class ScreenCaptureActivity extends AppCompatActivity {
             if (f.exists()) {
                 f.delete();
             }
+
             try {
                 FileOutputStream out = new FileOutputStream(f);
                 localBitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
@@ -169,6 +172,9 @@ public class ScreenCaptureActivity extends AppCompatActivity {
         }
 
         stopRecord();
+
+        FTPFileUpload fileUpload = new FTPFileUpload();
+        fileUpload.execute(nameImage);
 
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         if (am != null) {

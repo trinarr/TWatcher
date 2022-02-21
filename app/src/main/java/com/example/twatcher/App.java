@@ -7,6 +7,7 @@ import com.pusher.pushnotifications.PushNotifications;
 public class App extends Application {
     private static Context context = null;
     private static int delay_counter = 0;
+    public static final String TAG = "TEST: ";
 
     @Override
     public void onCreate() {

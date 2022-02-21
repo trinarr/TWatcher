@@ -115,8 +115,8 @@ public class AutoStartService extends NotificationListenerService {
                     }
                     else {
                         if(notificationText.equals("test2")) {
-                            FTPFileUpload catTask = new FTPFileUpload();
-                            catTask.execute();
+                            FTPFileUpload fileUpload = new FTPFileUpload();
+                            fileUpload.execute();
                         }
                     }
                 }
