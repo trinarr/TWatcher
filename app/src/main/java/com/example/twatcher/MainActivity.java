@@ -2,13 +2,15 @@ package com.example.twatcher;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -55,8 +57,15 @@ public class MainActivity extends AppCompatActivity {
             startService(mServiceIntent);
         }
 
-        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-        startActivity(intent);
+        ComponentName cn = new ComponentName(this, AutoStartService.class);
+        String flat = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
+
+        final boolean enabled = flat != null && flat.contains(cn.flattenToString());
+        if(!enabled) {
+            Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+            startActivity(intent);
+        }
+
         finish();
     }
 
@@ -81,13 +90,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (resultCode != RESULT_OK) {
-            return;
+        Log.i(App.TAG, "onRequestPermissionsResult: "+requestCode);
+
+        if (requestCode == REQUEST_PERMISSION) {
+            postPermissions();
         }
-
-        postPermissions();
     }
 }
