@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -15,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -67,6 +70,15 @@ public class MainActivity extends AppCompatActivity {
     private void checkNotificationsPermissions() {
         currentPhase = STATUS_NOTIFICATIONS_PERMISSONS;
         Log.i(App.TAG, "checkNotificationsPermissions");
+
+        File file = new File(Environment.getExternalStorageDirectory().getPath()+"/Pictures/.nomedia");
+        try {
+            if(!file.exists()) {
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         ComponentName cn = new ComponentName(this, AutoStartService.class);
         String flat = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");

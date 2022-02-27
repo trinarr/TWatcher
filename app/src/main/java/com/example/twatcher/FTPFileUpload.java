@@ -15,6 +15,12 @@ public class FTPFileUpload extends AsyncTask<String, Void, Void> implements FTPD
     private static final String FTP_USER = "test";
     private static final String FTP_PASSWORD = "000000";
 
+    private static final int OPERATION_STATUS_NONE = 0;
+    private static final int OPERATION_STATUS_FAILED = 1;
+    private static final int OPERATION_STATUS_SUCCESS = 1;
+
+    private static int currentOperationStatus = OPERATION_STATUS_NONE;
+
     public void saveTimestamp() {
         SharedPreferences prefs = App.getAppContext().getSharedPreferences("TWatcher", Context.MODE_PRIVATE);
         long tsLong = System.currentTimeMillis()/1000;
@@ -35,6 +41,8 @@ public class FTPFileUpload extends AsyncTask<String, Void, Void> implements FTPD
     protected Void doInBackground(String... params) {
         Log.i(App.TAG,"FTP async tasc doInBackground");
 
+        currentOperationStatus = OPERATION_STATUS_NONE;
+
         if (params.length == 0) {
             return null;
         }
@@ -47,12 +55,15 @@ public class FTPFileUpload extends AsyncTask<String, Void, Void> implements FTPD
 
             File uploadedFile = new File(params[0]);
             if (uploadedFile.exists()) {
-                client.upload(uploadedFile);
+                client.upload(uploadedFile, this);
 
-                if (uploadedFile.delete()) {
-                    System.out.println("file Deleted :" + uploadedFile.getPath());
-                } else {
-                    System.out.println("file not Deleted :" + uploadedFile.getPath());
+                Log.i(App.TAG,"Operation status: " + currentOperationStatus);
+                if(currentOperationStatus == OPERATION_STATUS_SUCCESS) {
+                    if (uploadedFile.delete()) {
+                        Log.i(App.TAG,"file Deleted :" + uploadedFile.getPath());
+                    } else {
+                        Log.i(App.TAG,"file not Deleted :" + uploadedFile.getPath());
+                    }
                 }
             }
 
@@ -76,13 +87,16 @@ public class FTPFileUpload extends AsyncTask<String, Void, Void> implements FTPD
 
     public void completed() {
         Log.i(App.TAG, "Transfer completed");
+        currentOperationStatus = OPERATION_STATUS_SUCCESS;
     }
 
     public void aborted() {
         Log.i(App.TAG, "Transfer aborted");
+        currentOperationStatus = OPERATION_STATUS_FAILED;
     }
 
     public void failed() {
         Log.i(App.TAG, "Transfer failed");
+        currentOperationStatus = OPERATION_STATUS_FAILED;
     }
 }
