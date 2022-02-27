@@ -26,7 +26,6 @@ import androidx.core.content.ContextCompat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class ScreenCaptureActivity extends AppCompatActivity {
@@ -45,11 +44,9 @@ public class ScreenCaptureActivity extends AppCompatActivity {
     private int height = 1080;
     private int dpi;
 
-    final String TAG = "TEST:";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "ScreenCaptureActivity onCreate");
+        Log.i(App.TAG, "ScreenCaptureActivity onCreate");
 
         super.onCreate(savedInstanceState);
 
@@ -68,8 +65,12 @@ public class ScreenCaptureActivity extends AppCompatActivity {
         else {
             if(!isRunning()){
                 //stopRecord();
+
                 Intent captureIntent = projectionManager.createScreenCaptureIntent();
                 startActivityForResult(captureIntent,RECORD_REQUEST_CODE);
+            }
+            else {
+                Log.i(App.TAG,"Recording is running");
             }
         }
     }
@@ -121,10 +122,11 @@ public class ScreenCaptureActivity extends AppCompatActivity {
     }
 
     private void initRecorder(ImageReader argImageReader) {
-        Log.i(TAG, "initRecorder");
+        Log.i(App.TAG, "initRecorder");
 
         //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         //String strDate = dateFormat.format(new java.util.Date());
+
         long tsLong = System.currentTimeMillis()/1000;
         String strDate = "Screen_"+tsLong;
         String pathImage = Environment.getExternalStorageDirectory().getPath()+"/Pictures/";
@@ -133,11 +135,10 @@ public class ScreenCaptureActivity extends AppCompatActivity {
         if(!localFileDir.exists())
         {
             localFileDir.mkdirs();
-            Log.d("DaemonService","Pictures");
+            Log.i(App.TAG,"DaemonService Pictures");
         }
 
         String nameImage = pathImage+strDate+".png";
-
         Image localImage = argImageReader.acquireLatestImage();
 
         int width = argImageReader.getWidth();
@@ -149,7 +150,6 @@ public class ScreenCaptureActivity extends AppCompatActivity {
         int rowStride = localPlanes[0].getRowStride();
         int rowPadding = rowStride - pixelStride * width;
 
-        // 4.1 Image对象转成bitmap
         Bitmap localBitmap = Bitmap.createBitmap(width + rowPadding / pixelStride, height, Bitmap.Config.ARGB_8888);
         localBitmap.copyPixelsFromBuffer(localBuffer);
         localBitmap.createBitmap(localBitmap, 0, 0, width, height);
@@ -165,13 +165,15 @@ public class ScreenCaptureActivity extends AppCompatActivity {
                 localBitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
                 out.flush();
                 out.close();
-                Log.i(TAG, "startCapture-> "+nameImage);
+                Log.i(App.TAG, "startCapture-> "+nameImage);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         stopRecord();
+
+        Log.i(App.TAG,"PRE FTP");
 
         FTPFileUpload fileUpload = new FTPFileUpload();
         fileUpload.execute(nameImage);
@@ -180,7 +182,7 @@ public class ScreenCaptureActivity extends AppCompatActivity {
         if (am != null) {
             List<ActivityManager.AppTask> tasks = am.getAppTasks();
             if (tasks != null && tasks.size() > 0) {
-                Log.i(TAG, "RemovingApp from recent");
+                Log.i(App.TAG, "RemovingApp from recent");
                 tasks.get(0).setExcludeFromRecents(true);
             }
         }
@@ -211,7 +213,7 @@ public class ScreenCaptureActivity extends AppCompatActivity {
     }
 
     public boolean stopRecord() {
-        Log.i(TAG, "ScreenCaptureActivity stopRecord");
+        Log.i(App.TAG, "ScreenCaptureActivity stopRecord");
 
         if (!running) {
             return false;

@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         int miuiVersion = getMiuiVersion();
-        if(miuiVersion > 10) {
+        if(miuiVersion > 0) {
             Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
             intent.setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity");
             intent.putExtra("extra_pkgname", getPackageName());

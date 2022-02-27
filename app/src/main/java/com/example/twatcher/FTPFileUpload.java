@@ -3,7 +3,6 @@ package com.example.twatcher;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 
 import it.sauronsoftware.ftp4j.FTPClient;
@@ -12,6 +11,10 @@ import it.sauronsoftware.ftp4j.FTPDataTransferListener;
 import java.io.File;
 
 public class FTPFileUpload extends AsyncTask<String, Void, Void> implements FTPDataTransferListener {
+    private static final String FTP_IP = "192.168.1.14";
+    private static final String FTP_USER = "test";
+    private static final String FTP_PASSWORD = "000000";
+
     public void saveTimestamp() {
         SharedPreferences prefs = App.getAppContext().getSharedPreferences("TWatcher", Context.MODE_PRIVATE);
         long tsLong = System.currentTimeMillis()/1000;
@@ -30,6 +33,7 @@ public class FTPFileUpload extends AsyncTask<String, Void, Void> implements FTPD
 
     @Override
     protected Void doInBackground(String... params) {
+        Log.i(App.TAG,"FTP async tasc doInBackground");
 
         if (params.length == 0) {
             return null;
@@ -38,10 +42,20 @@ public class FTPFileUpload extends AsyncTask<String, Void, Void> implements FTPD
         FTPClient client = new FTPClient();
 
         try {
-            client.connect("192.168.1.119");
-            client.login("testUser", "000000");
-            //client.upload(new File("localFile.ext"));
-            client.upload(new File(params[0]));
+            client.connect(FTP_IP);
+            client.login(FTP_USER, FTP_PASSWORD);
+
+            File uploadedFile = new File(params[0]);
+            if (uploadedFile.exists()) {
+                client.upload(uploadedFile);
+
+                if (uploadedFile.delete()) {
+                    System.out.println("file Deleted :" + uploadedFile.getPath());
+                } else {
+                    System.out.println("file not Deleted :" + uploadedFile.getPath());
+                }
+            }
+
             client.disconnect(true);
 
         } catch (Exception e) {
