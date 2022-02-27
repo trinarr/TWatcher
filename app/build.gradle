@@ -42,10 +42,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.3.5'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
     implementation 'commons-net:commons-net:3.6'
-
-    implementation 'com.google.firebase:firebase-core:16.0.9'
-    implementation 'com.google.firebase:firebase-messaging:18.0.0'
-    implementation 'com.pusher:push-notifications-android:1.8.0'
+    implementation("dev.assemblage:fcm-client:4.0.0")
 
     implementation 'com.github.wseemann:FFmpegMediaMetadataRetriever-core:1.0.16'
     implementation 'com.github.wseemann:FFmpegMediaMetadataRetriever-native:1.0.16'
